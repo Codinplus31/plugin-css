@@ -81,13 +81,25 @@ if (typeof window !== 'undefined') {
     })
   };
 
-  exports.fetch = function(load) {
+  exports.translate = function(load) {
     // dont reload styles loaded in the head
+    const selectorRegExp = /(\.|#)[a-zA-Z][a-zA-Z0-9-_]*(?![a-zA-Z0-9-_])(?=\s*{)/g;
+    const selectors = load.source.match(selectorRegExp);
+    
+    // Filter unique selectors and remove duplicates
+    const finalSelectors = Array.from(new Set(selectors)).map(e=> e.split('.').join('').split('#').join('')).reduce((obj, word) => {
+      obj[word] = word;
+      return obj;
+    }, {});
+  
     var links = findExistingCSS(load.address);
     if(!cssIsReloadable(links))
         return '';
-    return loadCSS(load.address, links);
+  return 'def' + 'ine(function() {\nreturn ' + JSON.stringify(loadCSS(load.address, links)?finalSelectors:'') + '});';
+
+        // return ;
   };
+
 }
 else {
   var builderPromise;
